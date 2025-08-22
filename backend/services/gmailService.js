@@ -5,7 +5,7 @@ const GmailToken = require("../models/GmailToken");
 class GmailService {
   constructor() {
     this.credentials = require("../config/credentials");
-    this.redirectUri = process.env.GMAIL_REDIRECT_URI || "http://localhost:8000/api/gmail/auth/callback";
+    this.redirectUri = "https://apifinwell.onrender.com/api/gmail/auth/callback";
   }
 
   // Create OAuth2 client for a specific user

@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Gmail OAuth2 configuration
 const credentials = require("../config/credentials");
-const redirectUri = process.env.GMAIL_REDIRECT_URI || "http://localhost:8000/api/gmail/auth/callback";
+const redirectUri = "https://apifinwell.onrender.com/api/gmail/auth/callback";
 
 // Generate Gmail OAuth2 URL
 router.get("/auth/url", protect, (req, res) => {
@@ -75,12 +75,12 @@ router.get("/auth/callback", protect, async (req, res) => {
     await gmailService.storeToken(userId, tokens, gmailEmail);
 
     // Redirect to frontend with success message
-    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const frontendUrl = "https://smackathon-2-k25-t03.vercel.app";
     res.redirect(`${frontendUrl}/dashboard?gmail_connected=true&email=${gmailEmail}`);
 
   } catch (error) {
     console.error("Error in Gmail auth callback:", error);
-    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const frontendUrl = "https://smackathon-2-k25-t03.vercel.app";
     res.redirect(`${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(error.message)}`);
   }
 });
