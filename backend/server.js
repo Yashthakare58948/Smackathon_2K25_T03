@@ -31,6 +31,14 @@ app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/gmail", gmailRoutes);
 app.use("/api/gmail", gmailAuthRoutes);
 
+// Test endpoint
+app.get("/api/test", (req, res) => {
+  res.json({
+    message: "Server is working!",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

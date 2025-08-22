@@ -5,13 +5,27 @@ const gmailService = require("../services/gmailService");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
+// Test endpoint
+router.get("/test", (req, res) => {
+  res.json({
+    message: "Gmail auth routes are working!",
+    credentials: !!credentials,
+  });
+});
+
 // Gmail OAuth2 configuration
 const credentials = require("../config/credentials");
-const redirectUri = "https://apifinwell.onrender.com/api/gmail/auth/callback";
+const redirectUri =
+  process.env.GMAIL_REDIRECT_URI ||
+  credentials.web.redirect_uris[0] + "/api/gmail/auth/callback";
 
 // Generate Gmail OAuth2 URL
 router.get("/auth/url", protect, (req, res) => {
   try {
+    console.log("Generating Gmail auth URL...");
+    console.log("Client ID:", credentials.web.client_id);
+    console.log("Redirect URI:", redirectUri);
+
     const oAuth2Client = new OAuth2(
       credentials.web.client_id,
       credentials.web.client_secret,
@@ -19,26 +33,28 @@ router.get("/auth/url", protect, (req, res) => {
     );
 
     const scopes = [
-      'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/userinfo.email'
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
     ];
 
     const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
+      access_type: "offline",
       scope: scopes,
-      prompt: 'consent' // Force consent to get refresh token
+      prompt: "consent", // Force consent to get refresh token
     });
+
+    console.log("Generated auth URL:", authUrl);
 
     res.json({
       success: true,
-      authUrl: authUrl
+      authUrl: authUrl,
     });
   } catch (error) {
     console.error("Error generating auth URL:", error);
     res.status(500).json({
       success: false,
       message: "Failed to generate Gmail authentication URL",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -52,7 +68,7 @@ router.get("/auth/callback", protect, async (req, res) => {
     if (!code) {
       return res.status(400).json({
         success: false,
-        message: "Authorization code is required"
+        message: "Authorization code is required",
       });
     }
 
@@ -64,7 +80,7 @@ router.get("/auth/callback", protect, async (req, res) => {
 
     // Exchange code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
-    
+
     // Get user's Gmail profile
     oAuth2Client.setCredentials(tokens);
     const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
@@ -75,13 +91,18 @@ router.get("/auth/callback", protect, async (req, res) => {
     await gmailService.storeToken(userId, tokens, gmailEmail);
 
     // Redirect to frontend with success message
-    const frontendUrl = "https://smackathon-2-k25-t03.vercel.app";
-    res.redirect(`${frontendUrl}/dashboard?gmail_connected=true&email=${gmailEmail}`);
-
+    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    res.redirect(
+      `${frontendUrl}/dashboard?gmail_connected=true&email=${gmailEmail}`
+    );
   } catch (error) {
     console.error("Error in Gmail auth callback:", error);
-    const frontendUrl = "https://smackathon-2-k25-t03.vercel.app";
-    res.redirect(`${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(error.message)}`);
+    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    res.redirect(
+      `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
+        error.message
+      )}`
+    );
   }
 });
 
@@ -90,19 +111,21 @@ router.get("/auth/status", protect, async (req, res) => {
   try {
     const userId = req.user.id;
     const hasToken = await gmailService.hasToken(userId);
-    const gmailEmail = hasToken ? await gmailService.getGmailEmail(userId) : null;
+    const gmailEmail = hasToken
+      ? await gmailService.getGmailEmail(userId)
+      : null;
 
     res.json({
       success: true,
       connected: hasToken,
-      gmailEmail: gmailEmail
+      gmailEmail: gmailEmail,
     });
   } catch (error) {
     console.error("Error checking Gmail status:", error);
     res.status(500).json({
       success: false,
       message: "Failed to check Gmail connection status",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -115,14 +138,14 @@ router.delete("/auth/disconnect", protect, async (req, res) => {
 
     res.json({
       success: true,
-      message: "Gmail account disconnected successfully"
+      message: "Gmail account disconnected successfully",
     });
   } catch (error) {
     console.error("Error disconnecting Gmail:", error);
     res.status(500).json({
       success: false,
       message: "Failed to disconnect Gmail account",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -136,14 +159,14 @@ router.get("/auth/test", protect, async (req, res) => {
     res.json({
       success: true,
       message: "Gmail connection is working",
-      profile: profile
+      profile: profile,
     });
   } catch (error) {
     console.error("Error testing Gmail connection:", error);
     res.status(500).json({
       success: false,
       message: "Gmail connection test failed",
-      error: error.message
+      error: error.message,
     });
   }
 });

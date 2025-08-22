@@ -73,4 +73,92 @@ async function parseEmail(messageId) {
   }
 }
 
-module.exports = { listExpenseEmails, parseEmail };
+// Extract expense data from email content
+function extractExpenseData(emailData) {
+  const { body, headers } = emailData;
+
+  // Default values
+  let title = "Gmail Import";
+  let amount = 0;
+  let date = new Date();
+  let vendor = "";
+
+  // Try to extract amount from email body
+  const amountPatterns = [
+    /₹\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/g, // Indian Rupees
+    /Rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Rs format
+    /\$\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/g, // US Dollars
+    /(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:rupees?|rs|dollars?|usd)/gi, // Amount with currency
+    /amount[:\s]*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Amount keyword
+    /total[:\s]*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Total keyword
+  ];
+
+  let foundAmount = null;
+  for (const pattern of amountPatterns) {
+    const matches = body.match(pattern);
+    if (matches && matches.length > 0) {
+      // Extract the first match and clean it
+      const amountStr = matches[0].replace(/[^\d.,]/g, "").replace(",", "");
+      const parsedAmount = parseFloat(amountStr);
+      if (parsedAmount > 0 && parsedAmount < 1000000) {
+        // Reasonable amount range
+        foundAmount = parsedAmount;
+        break;
+      }
+    }
+  }
+
+  if (foundAmount) {
+    amount = foundAmount;
+  }
+
+  // Try to extract date from email
+  const datePatterns = [
+    /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/g, // DD/MM/YYYY or MM/DD/YYYY
+    /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/g, // YYYY/MM/DD
+    /(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{2,4})/gi, // DD Month YYYY
+  ];
+
+  for (const pattern of datePatterns) {
+    const matches = body.match(pattern);
+    if (matches && matches.length > 0) {
+      const parsedDate = new Date(matches[0]);
+      if (!isNaN(parsedDate.getTime())) {
+        date = parsedDate;
+        break;
+      }
+    }
+  }
+
+  // Try to extract vendor/merchant from email
+  const vendorPatterns = [
+    /from[:\s]*([A-Za-z\s]+)/gi,
+    /merchant[:\s]*([A-Za-z\s]+)/gi,
+    /vendor[:\s]*([A-Za-z\s]+)/gi,
+    /store[:\s]*([A-Za-z\s]+)/gi,
+  ];
+
+  for (const pattern of vendorPatterns) {
+    const matches = body.match(pattern);
+    if (matches && matches.length > 0) {
+      vendor = matches[1].trim();
+      break;
+    }
+  }
+
+  // Create title from vendor or subject
+  if (vendor) {
+    title = `${vendor} - ${amount > 0 ? `₹${amount}` : "Expense"}`;
+  } else if (headers.subject) {
+    title = headers.subject.substring(0, 50); // Limit length
+  }
+
+  return {
+    title,
+    amount,
+    date,
+    vendor,
+  };
+}
+
+module.exports = { listExpenseEmails, parseEmail, extractExpenseData };

@@ -32,7 +32,10 @@ const Navbar = ({ activeMenu }) => {
 
   const handleGmailConnect = async () => {
     try {
+      console.log("Requesting Gmail auth URL...");
       const response = await axiosInstance.get(API_PATHS.GMAIL.AUTH_URL);
+      console.log("Auth URL response:", response.data);
+
       if (response.data.success) {
         // Open Gmail OAuth in new window
         window.open(response.data.authUrl, "_blank", "width=500,height=600");
@@ -41,10 +44,16 @@ const Navbar = ({ activeMenu }) => {
         setTimeout(() => {
           checkGmailStatus();
         }, 3000);
+      } else {
+        toast.error("Failed to generate Gmail auth URL");
       }
     } catch (error) {
       console.error("Error getting Gmail auth URL:", error);
-      toast.error("Failed to connect Gmail account");
+      console.error("Error details:", error.response?.data);
+      toast.error(
+        "Failed to connect Gmail account: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
