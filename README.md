@@ -1,4 +1,4 @@
-Here’s your README updated with **all URLs pointing to your GitHub and project repository**:
+-Here’s your README updated with **all URLs pointing to your GitHub and project repository**:
 
 ````markdown
 # 💸 SpendWise: Expense Tracker
