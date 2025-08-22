@@ -1,4 +1,4 @@
-export const BASE_URL = "https://389ad59ceb52.ngrok-free.app";
+export const BASE_URL = "https://apifinwell.onrender.com";
 
 // utils/apiPaths.js
 export const API_PATHS = {
