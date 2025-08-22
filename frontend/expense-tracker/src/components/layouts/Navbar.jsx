@@ -11,7 +11,7 @@ const Navbar = ({ activeMenu }) => {
       // Optionally, open a popup for OAuth2 if needed
       // For now, just call your backend endpoint
       const res = await axois.get(
-        "http://localhost:8000/api/gmail/fetch-expenses"
+        "https://apifinwell.onrender.com/api/gmail/fetch-expenses"
       );
       const data = res.data; // axios already parses JSON
       console.log(data);
