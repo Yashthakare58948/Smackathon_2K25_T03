@@ -8,6 +8,7 @@ const incomeRoutes = require("./routes/incomeRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const gmailRoutes = require("./routes/gmailRoutes");
+const gmailAuthRoutes = require("./routes/gmailAuthRoutes");
 const app = express();
 
 // Middleware to handle CORS
@@ -28,6 +29,7 @@ app.use("/api/v1/income", incomeRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/gmail", gmailRoutes);
+app.use("/api/gmail", gmailAuthRoutes);
 
 // Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

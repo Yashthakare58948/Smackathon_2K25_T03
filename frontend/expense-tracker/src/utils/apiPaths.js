@@ -1,4 +1,4 @@
-export const BASE_URL = "https://apifinwell.onrender.com";
+export const BASE_URL = "https://389ad59ceb52.ngrok-free.app";
 
 // utils/apiPaths.js
 export const API_PATHS = {
@@ -27,5 +27,13 @@ export const API_PATHS = {
   },
   GMAIL: {
     GMAIL_PARSER: "/api/gmail/fetch-expenses",
+    IMPORT_STATUS: "/api/gmail/import-status",
+    PROCESSED_EMAILS: "/api/gmail/processed-emails",
+    CLEAR_PROCESSED_EMAILS: "/api/gmail/clear-processed-emails",
+    // Gmail Authentication
+    AUTH_URL: "/api/gmail/auth/url",
+    AUTH_STATUS: "/api/gmail/auth/status",
+    AUTH_DISCONNECT: "/api/gmail/auth/disconnect",
+    AUTH_TEST: "/api/gmail/auth/test",
   },
 };
