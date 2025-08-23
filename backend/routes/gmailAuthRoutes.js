@@ -11,6 +11,9 @@ router.get("/test", (req, res) => {
   res.json({
     message: "Gmail auth routes are working!",
     credentials: !!credentials,
+    redirectUri: redirectUri,
+    clientId: credentials.web.client_id,
+    hasClientSecret: !!credentials.web.client_secret,
   });
 });
 
@@ -38,14 +41,29 @@ router.get("/auth/url", protect, (req, res) => {
       "https://www.googleapis.com/auth/userinfo.email",
     ];
 
+    // Get the JWT token from the authorization header
+    const jwtToken = req.headers.authorization?.split(" ")[1];
+    if (!jwtToken) {
+      return res.status(401).json({
+        success: false,
+        message: "No authorization token provided",
+      });
+    }
+
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: scopes,
       prompt: "consent", // Force consent to get refresh token
-      state: req.user.token,
+      state: jwtToken,
     });
 
     console.log("Generated auth URL:", authUrl);
+    console.log("OAuth parameters:", {
+      clientId: credentials.web.client_id,
+      redirectUri,
+      scopes,
+      stateLength: jwtToken ? jwtToken.length : 0,
+    });
 
     res.json({
       success: true,
@@ -66,10 +84,22 @@ router.get("/auth/callback", async (req, res) => {
   const frontendUrl =
     process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
 
+  console.log("Frontend URL for redirect:", frontendUrl);
+
   try {
     const { code, state } = req.query;
 
+    console.log("OAuth callback received:", {
+      code: !!code,
+      state: !!state,
+      query: req.query,
+    });
+
     if (!code || !state) {
+      console.error("Missing OAuth parameters:", {
+        code: !!code,
+        state: !!state,
+      });
       return res.redirect(
         `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
           "Missing authorization code or state token"
@@ -80,9 +110,12 @@ router.get("/auth/callback", async (req, res) => {
     // Verify JWT from state
     let decoded;
     try {
+      console.log("Verifying JWT state parameter...");
       decoded = jwt.verify(state, process.env.JWT_SECRET);
+      console.log("JWT verified successfully, user ID:", decoded.id);
     } catch (err) {
       console.error("Invalid or expired JWT in state:", err);
+      console.error("State parameter received:", state);
       return res.redirect(
         `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
           "Invalid or expired authentication token"

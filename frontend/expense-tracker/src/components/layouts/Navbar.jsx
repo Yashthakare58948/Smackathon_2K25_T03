@@ -73,12 +73,29 @@ const Navbar = ({ activeMenu, onDataRefresh }) => {
       console.log("Auth URL response:", response.data);
 
       if (response.data.success) {
+        console.log("Opening OAuth popup with URL:", response.data.authUrl);
         // Open Gmail OAuth in new window
-        window.open(response.data.authUrl, "_blank", "width=500,height=600");
+        const popup = window.open(
+          response.data.authUrl,
+          "_blank",
+          "width=500,height=600"
+        );
+
+        if (!popup) {
+          toast.error("Popup blocked! Please allow popups for this site.");
+          return;
+        }
 
         // Poll for status changes more frequently
         const pollInterval = setInterval(async () => {
           try {
+            // Check if popup was closed by user
+            if (popup.closed) {
+              console.log("OAuth popup was closed by user");
+              clearInterval(pollInterval);
+              return;
+            }
+
             const statusResponse = await axiosInstance.get(
               API_PATHS.GMAIL.AUTH_STATUS
             );
@@ -91,6 +108,7 @@ const Navbar = ({ activeMenu, onDataRefresh }) => {
                 `Gmail account connected successfully: ${statusResponse.data.gmailEmail}`
               );
               clearInterval(pollInterval);
+              popup.close();
             }
           } catch (error) {
             console.error("Error polling Gmail status:", error);
@@ -100,6 +118,9 @@ const Navbar = ({ activeMenu, onDataRefresh }) => {
         // Stop polling after 30 seconds
         setTimeout(() => {
           clearInterval(pollInterval);
+          if (!popup.closed) {
+            popup.close();
+          }
         }, 30000);
       } else {
         toast.error("Failed to generate Gmail auth URL");
