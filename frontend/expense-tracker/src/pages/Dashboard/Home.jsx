@@ -1,3 +1,4 @@
+// pages/Dashboard/Home.jsx
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
@@ -8,7 +9,8 @@ import InfoCard from "../../components/Cards/InfoCard";
 
 import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
 import { IoMdCard } from "react-icons/io";
-import { addThousandsSeparator } from "../../utils/helper";
+import { addThousandsSeparator, formatRupee } from "../../utils/helper";
+
 import RecentTransactions from "../../components/Dashboard/RecentTransactions";
 import FinanceOverview from "../../components/Dashboard/FinanceOverview";
 import ExpenseTransactions from "../../components/Dashboard/ExpenseTransactions";
@@ -40,15 +42,12 @@ const Home = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    return () => {};
   }, []);
-
-  // Helper to format numbers with ₹
-  const formatRupee = (amount) => `₹${addThousandsSeparator(amount)}`;
 
   return (
     <DashboardLayout activeMenu="Dashboard">
       <div className="my-5 mx-auto">
+        {/* Top Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <InfoCard
             icon={<IoMdCard />}
@@ -72,18 +71,19 @@ const Home = () => {
           />
         </div>
 
+        {/* Dashboard Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <RecentTransactions
-            transactions={dashboardData?.recentTransactions}
+            transactions={dashboardData?.recentTransactions || []}
             onSeeMore={() => navigate("/expense")}
-            formatRupee={formatRupee} // pass formatting function if needed
+            formatRupee={formatRupee}
           />
 
           <FinanceOverview 
             totalBalance={dashboardData?.totalBalance || 0}
             totalIncome={dashboardData?.totalIncome || 0}
             totalExpense={dashboardData?.totalExpense || 0}
-            formatRupee={formatRupee} // pass formatting function if component supports it
+            formatRupee={formatRupee}
           />
 
           <ExpenseTransactions
