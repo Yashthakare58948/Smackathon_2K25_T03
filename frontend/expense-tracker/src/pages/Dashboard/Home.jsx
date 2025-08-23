@@ -18,7 +18,6 @@ import RecentIncome from "../../components/Dashboard/RecentIncome";
 
 const Home = () => {
   useUserAuth();
-
   const navigate = useNavigate();
 
   const [dashboardData, setDashboardData] = useState(null);
@@ -26,14 +25,11 @@ const Home = () => {
 
   const fetchDashboardData = async () => {
     if (loading) return;
-
     setLoading(true);
-
     try {
       const response = await axiosInstance.get(
         `${API_PATHS.DASHBOARD.GET_DATA}`
       );
-
       if (response.data) {
         setDashboardData(response.data);
       }
@@ -46,8 +42,10 @@ const Home = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    return () => { };
-  }, [])
+    return () => {};
+  }, []);
+
+  const formatRupee = (amount) => `₹${addThousandsSeparator(amount)}`;
 
   return (
     <DashboardLayout activeMenu="Dashboard">
@@ -56,21 +54,21 @@ const Home = () => {
           <InfoCard
             icon={<IoMdCard />}
             label="Total Balance"
-            value={addThousandsSeparator(dashboardData?.totalBalance || 0)}
+            value={formatRupee(dashboardData?.totalBalance || 0)}
             color="bg-primary"
           />
 
           <InfoCard
             icon={<LuWalletMinimal />}
             label="Total Income"
-            value={addThousandsSeparator(dashboardData?.totalIncome || 0)}
+            value={formatRupee(dashboardData?.totalIncome || 0)}
             color="bg-green-500"
           />
 
           <InfoCard
             icon={<LuHandCoins />}
             label="Total Expense"
-            value={addThousandsSeparator(dashboardData?.totalExpense || 0)}
+            value={formatRupee(dashboardData?.totalExpense || 0)}
             color="bg-red-500"
           />
         </div>
@@ -81,7 +79,7 @@ const Home = () => {
             onSeeMore={() => navigate("/expense")}
           />
 
-          <FinanceOverview 
+          <FinanceOverview
             totalBalance={dashboardData?.totalBalance || 0}
             totalIncome={dashboardData?.totalIncome || 0}
             totalExpense={dashboardData?.totalExpense || 0}
