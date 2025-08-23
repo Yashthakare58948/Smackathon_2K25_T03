@@ -1,6 +1,7 @@
 const express = require("express");
 const { google } = require("googleapis");
 const { OAuth2 } = google.auth;
+const jwt = require("jsonwebtoken");
 const gmailService = require("../services/gmailService");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();

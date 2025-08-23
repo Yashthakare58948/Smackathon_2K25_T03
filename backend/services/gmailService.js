@@ -254,13 +254,22 @@ class GmailService {
   // Store Gmail token for a user
   async storeToken(userId, tokenData, gmailEmail) {
     try {
+      // Calculate expiry date if not provided
+      let expiryDate = tokenData.expiry_date;
+      if (!expiryDate && tokenData.expires_in) {
+        expiryDate = Date.now() + (tokenData.expires_in * 1000);
+      } else if (!expiryDate) {
+        // Default to 1 hour if no expiry info
+        expiryDate = Date.now() + (60 * 60 * 1000);
+      }
+
       const token = new GmailToken({
         userId,
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
         scope: tokenData.scope,
         token_type: tokenData.token_type,
-        expiry_date: tokenData.expiry_date,
+        expiry_date: expiryDate,
         gmailEmail,
       });
 

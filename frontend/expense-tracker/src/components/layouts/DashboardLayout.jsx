@@ -3,11 +3,11 @@ import { UserContext } from "../../context/userContext";
 import Navbar from "./Navbar";
 import SideMenu from "./SideMenu";
 
-const DashboardLayout = ({ children, activeMenu }) => {
+const DashboardLayout = ({ children, activeMenu, onDataRefresh }) => {
     const { user } = useContext(UserContext);
     return (
         <div className="">
-            <Navbar activeMenu={activeMenu} />
+            <Navbar activeMenu={activeMenu} onDataRefresh={onDataRefresh} />
 
             {user && (
                 <div className="flex">

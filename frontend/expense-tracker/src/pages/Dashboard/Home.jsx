@@ -11,7 +11,6 @@ import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
 import { IoMdCard } from "react-icons/io";
 import { addThousandsSeparator, formatRupee } from "../../utils/helper";
 
-
 import RecentTransactions from "../../components/Dashboard/RecentTransactions";
 import FinanceOverview from "../../components/Dashboard/FinanceOverview";
 import ExpenseTransactions from "../../components/Dashboard/ExpenseTransactions";
@@ -30,7 +29,9 @@ const Home = () => {
 
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`${API_PATHS.DASHBOARD.GET_DATA}`);
+      const response = await axiosInstance.get(
+        `${API_PATHS.DASHBOARD.GET_DATA}`
+      );
       if (response.data) {
         setDashboardData(response.data);
       }
@@ -46,7 +47,7 @@ const Home = () => {
   }, []);
 
   return (
-    <DashboardLayout activeMenu="Dashboard">
+    <DashboardLayout activeMenu="Dashboard" onDataRefresh={fetchDashboardData}>
       <div className="my-5 mx-auto">
         {/* Top Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -80,7 +81,7 @@ const Home = () => {
             formatRupee={formatRupee}
           />
 
-          <FinanceOverview 
+          <FinanceOverview
             totalBalance={dashboardData?.totalBalance || 0}
             totalIncome={dashboardData?.totalIncome || 0}
             totalExpense={dashboardData?.totalExpense || 0}
@@ -99,7 +100,9 @@ const Home = () => {
           />
 
           <RecentIncomeWithChart
-            data={dashboardData?.last60DaysIncome?.transactions?.slice(0, 4) || []}
+            data={
+              dashboardData?.last60DaysIncome?.transactions?.slice(0, 4) || []
+            }
             totalIncome={dashboardData?.totalIncome || 0}
             formatRupee={formatRupee}
           />
