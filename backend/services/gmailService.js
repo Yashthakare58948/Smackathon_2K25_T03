@@ -6,8 +6,7 @@ class GmailService {
   constructor() {
     this.credentials = require("../config/credentials");
     this.redirectUri =
-      process.env.GMAIL_REDIRECT_URI ||
-      this.credentials.web.redirect_uris[0] + "/api/gmail/auth/callback";
+      process.env.GMAIL_REDIRECT_URI || this.credentials.web.redirect_uris[0];
   }
 
   // Create OAuth2 client for a specific user

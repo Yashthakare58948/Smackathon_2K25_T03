@@ -87,8 +87,7 @@ function extractExpenseData(emailData) {
   const amountPatterns = [
     /₹\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/g, // Indian Rupees
     /Rs\.?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Rs format
-    /\$\s*(\d+(?:,\d{3})*(?:\.\d{2})?)/g, // US Dollars
-    /(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:rupees?|rs|dollars?|usd)/gi, // Amount with currency
+    /(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:rupees?|rs)/gi, // Amount with currency
     /amount[:\s]*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Amount keyword
     /total[:\s]*(\d+(?:,\d{3})*(?:\.\d{2})?)/gi, // Total keyword
   ];

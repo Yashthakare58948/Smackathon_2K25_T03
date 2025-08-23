@@ -30,7 +30,7 @@ const AddExpenseForm = ({ onAddExpense }) => {
         value={expense.amount}
         onChange={({ target }) => handleChange("amount", target.value)}
         label="Amount"
-        placeholder="$1000"
+        placeholder="₹1000"
         type="number"
       />
 
