@@ -16,8 +16,7 @@ router.get("/test", (req, res) => {
 // Gmail OAuth2 configuration
 const credentials = require("../config/credentials");
 const redirectUri =
-  process.env.GMAIL_REDIRECT_URI ||
-  credentials.web.redirect_uris[0] + "/api/gmail/auth/callback";
+  process.env.GMAIL_REDIRECT_URI || credentials.web.redirect_uris[0];
 
 // Generate Gmail OAuth2 URL
 router.get("/auth/url", protect, (req, res) => {
@@ -25,6 +24,7 @@ router.get("/auth/url", protect, (req, res) => {
     console.log("Generating Gmail auth URL...");
     console.log("Client ID:", credentials.web.client_id);
     console.log("Redirect URI:", redirectUri);
+    console.log("Available redirect URIs:", credentials.web.redirect_uris);
 
     const oAuth2Client = new OAuth2(
       credentials.web.client_id,
@@ -91,13 +91,15 @@ router.get("/auth/callback", protect, async (req, res) => {
     await gmailService.storeToken(userId, tokens, gmailEmail);
 
     // Redirect to frontend with success message
-    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const frontendUrl =
+      process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
     res.redirect(
       `${frontendUrl}/dashboard?gmail_connected=true&email=${gmailEmail}`
     );
   } catch (error) {
     console.error("Error in Gmail auth callback:", error);
-    const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const frontendUrl =
+      process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
     res.redirect(
       `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
         error.message

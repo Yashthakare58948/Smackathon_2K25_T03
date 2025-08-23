@@ -8,8 +8,8 @@ const CREDENTIALS = {
     token_uri: "https://oauth2.googleapis.com/token",
     auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
     client_secret: "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",
-    redirect_uris: ["https://smackathon-2-k25-t03.vercel.app/","https://apifinwell.onrender.com"],
-    javascript_origins: ["https://smackathon-2-k25-t03.vercel.app/","https://apifinwell.onrender.com"],
+    redirect_uris: ["https://apifinwell.onrender.com/api/gmail/auth/callback"],
+    javascript_origins: ["https://smackathon-2-k25-t03.vercel.app"],
   },
 };
 
