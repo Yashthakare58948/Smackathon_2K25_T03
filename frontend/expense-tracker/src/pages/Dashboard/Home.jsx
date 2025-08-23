@@ -19,17 +19,15 @@ import RecentIncome from "../../components/Dashboard/RecentIncome";
 const Home = () => {
   useUserAuth();
   const navigate = useNavigate();
-
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchDashboardData = async () => {
     if (loading) return;
+
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
-        `${API_PATHS.DASHBOARD.GET_DATA}`
-      );
+      const response = await axiosInstance.get(`${API_PATHS.DASHBOARD.GET_DATA}`);
       if (response.data) {
         setDashboardData(response.data);
       }
@@ -45,6 +43,7 @@ const Home = () => {
     return () => {};
   }, []);
 
+  // Helper to format numbers with ₹
   const formatRupee = (amount) => `₹${addThousandsSeparator(amount)}`;
 
   return (
@@ -77,31 +76,37 @@ const Home = () => {
           <RecentTransactions
             transactions={dashboardData?.recentTransactions}
             onSeeMore={() => navigate("/expense")}
+            formatRupee={formatRupee} // pass formatting function if needed
           />
 
-          <FinanceOverview
+          <FinanceOverview 
             totalBalance={dashboardData?.totalBalance || 0}
             totalIncome={dashboardData?.totalIncome || 0}
             totalExpense={dashboardData?.totalExpense || 0}
+            formatRupee={formatRupee} // pass formatting function if component supports it
           />
 
           <ExpenseTransactions
             transactions={dashboardData?.last30DaysExpense?.transactions || []}
             onSeeMore={() => navigate("/expense")}
+            formatRupee={formatRupee}
           />
 
           <Last30DaysExpense
             data={dashboardData?.last30DaysExpense?.transactions || []}
+            formatRupee={formatRupee}
           />
 
           <RecentIncomeWithChart
             data={dashboardData?.last60DaysIncome?.transactions?.slice(0, 4) || []}
             totalIncome={dashboardData?.totalIncome || 0}
+            formatRupee={formatRupee}
           />
 
           <RecentIncome
             transactions={dashboardData?.last60DaysIncome?.transactions || []}
             onSeeMore={() => navigate("/income")}
+            formatRupee={formatRupee}
           />
         </div>
       </div>
