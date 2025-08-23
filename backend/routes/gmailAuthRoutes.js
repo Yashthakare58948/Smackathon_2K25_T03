@@ -41,6 +41,7 @@ router.get("/auth/url", protect, (req, res) => {
       access_type: "offline",
       scope: scopes,
       prompt: "consent", // Force consent to get refresh token
+      state: req.user.token,
     });
 
     console.log("Generated auth URL:", authUrl);
@@ -60,49 +61,65 @@ router.get("/auth/url", protect, (req, res) => {
 });
 
 // Gmail OAuth2 callback
-router.get("/auth/callback", protect, async (req, res) => {
-  try {
-    const { code } = req.query;
-    const userId = req.user.id;
+router.get("/auth/callback", async (req, res) => {
+  const frontendUrl =
+    process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
 
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Authorization code is required",
-      });
+  try {
+    const { code, state } = req.query;
+
+    if (!code || !state) {
+      return res.redirect(
+        `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
+          "Missing authorization code or state token"
+        )}`
+      );
     }
 
+    // Verify JWT from state
+    let decoded;
+    try {
+      decoded = jwt.verify(state, process.env.JWT_SECRET);
+    } catch (err) {
+      console.error("Invalid or expired JWT in state:", err);
+      return res.redirect(
+        `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
+          "Invalid or expired authentication token"
+        )}`
+      );
+    }
+
+    const userId = decoded.id;
+
+    // Create new OAuth2 client
     const oAuth2Client = new OAuth2(
       credentials.web.client_id,
       credentials.web.client_secret,
       redirectUri
     );
 
-    // Exchange code for tokens
+    // Exchange authorization code for tokens
     const { tokens } = await oAuth2Client.getToken(code);
 
-    // Get user's Gmail profile
+    // Use credentials to get Gmail profile
     oAuth2Client.setCredentials(tokens);
     const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
     const profile = await gmail.users.getProfile({ userId: "me" });
     const gmailEmail = profile.data.emailAddress;
 
-    // Store tokens in database
+    // Store the tokens for this user
     await gmailService.storeToken(userId, tokens, gmailEmail);
 
-    // Redirect to frontend with success message
-    const frontendUrl =
-      process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
+    // Redirect back to frontend with success
     res.redirect(
       `${frontendUrl}/dashboard?gmail_connected=true&email=${gmailEmail}`
     );
   } catch (error) {
-    console.error("Error in Gmail auth callback:", error);
-    const frontendUrl =
-      process.env.CLIENT_URL || "https://smackathon-2-k25-t03.vercel.app";
+    console.error("Gmail OAuth callback error:", error);
+
     res.redirect(
       `${frontendUrl}/dashboard?gmail_error=true&message=${encodeURIComponent(
-        error.message
+        error.message || "Unknown error"
       )}`
     );
   }
